@@ -24,4 +24,4 @@ app.get("/make-server-5723645c/health", (c) => {
   return c.json({ status: "ok" });
 });
 
-// Deno.serve(app.fetch);
+export default app;
