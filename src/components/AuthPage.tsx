@@ -80,7 +80,7 @@ export function AuthPage() {
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div className="space-y-2">
                     <Label>Account Type</Label>
-                    <Select value={userType} onValueChange={(value) => setUserType(value as UserType)}>
+                    <Select value={userType as string} onValueChange={(value) => setUserType(value as UserType)}>
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
@@ -134,7 +134,7 @@ export function AuthPage() {
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div className="space-y-2">
                     <Label>Account Type</Label>
-                    <Select value={userType} onValueChange={(value) => setUserType(value as UserType)}>
+                    <Select value={userType as string} onValueChange={(value) => setUserType(value as UserType)}>
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
