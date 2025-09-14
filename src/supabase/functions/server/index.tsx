@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { logger } from "hono/logger";
-import * as kv from "@/src/supabase/functions/server/kv_store";
+import * as kv from "@/supabase/functions/server/kv_store";
 const app = new Hono();
 
 // Enable logger
