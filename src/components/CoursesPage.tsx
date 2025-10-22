@@ -23,104 +23,123 @@ import {
   Zap
 } from 'lucide-react'
 import { ImageWithFallback } from './figma/ImageWithFallback'
+import { supabase } from "@/lib/supabaseClient";
 
-export function CoursesPage() {
+
+type Course = {
+  id: number
+  title: string
+  subject: string
+  grade: string
+  instructor: string
+  rating: number
+  students: number
+  duration: string
+  price: number
+  image?: string
+  description?: string
+  features?: string[]
+  icon?: string
+}
+
+export function CoursesPage({ initialcourses }: { initialcourses: Course[] }) {
+  const [courses, setcourses] = useState(initialcourses);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedGrade, setSelectedGrade] = useState('all');
   const [selectedSubject, setSelectedSubject] = useState('all');
 
-  const courses = [
-    {
-      id: 1,
-      title: 'Advanced Mathematics',
-      subject: 'math',
-      grade: 'grade-10',
-      instructor: 'Dr. Sarah Johnson',
-      rating: 4.9,
-      students: 156,
-      duration: '12 weeks',
-      price: 299,
-      image: 'https://images.unsplash.com/photo-1584644769698-4762ca337c17?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxzdHVkZW50cyUyMGxlYXJuaW5nJTIwb25saW5lfGVufDF8fHx8MTc1NzQzODkyNHww&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral',
-      description: 'Master algebra, geometry, and pre-calculus concepts with hands-on problem solving.',
-      features: ['Live sessions', 'Practice problems', 'Progress tracking'],
-      icon: Calculator
-    },
-    {
-      id: 2,
-      title: 'Physics Fundamentals',
-      subject: 'science',
-      grade: 'grade-9',
-      instructor: 'Prof. Michael Chen',
-      rating: 4.8,
-      students: 124,
-      duration: '10 weeks',
-      price: 249,
-      image: 'https://images.unsplash.com/photo-1726226347716-43c040b7fa1d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx0ZWFjaGVyJTIwb25saW5lJTIwdHV0b3Jpbmd8ZW58MXx8fHwxNzU3NDM4OTI4fDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral',
-      description: 'Explore the fundamental principles of physics through interactive experiments.',
-      features: ['Virtual labs', 'Real-world applications', 'Concept mastery'],
-      icon: Microscope
-    },
-    {
-      id: 3,
-      title: 'Robotics Engineering',
-      subject: 'robotics',
-      grade: 'grade-8',
-      instructor: 'Dr. Emily Rodriguez',
-      rating: 5.0,
-      students: 89,
-      duration: '16 weeks',
-      price: 399,
-      image: 'https://images.unsplash.com/photo-1603354351149-e97b9124020d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxyb2JvdGljcyUyMGVkdWNhdGlvbiUyMGtpZHN8ZW58MXx8fHwxNzU3NDM4OTMxfDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral',
-      description: 'Build and program robots while learning engineering and coding principles.',
-      features: ['Hands-on projects', 'Programming basics', 'Engineering design'],
-      icon: Cog
-    },
-    {
-      id: 4,
-      title: 'Music Theory & Piano',
-      subject: 'music',
-      grade: 'grade-6',
-      instructor: 'Ms. Amanda Foster',
-      rating: 4.7,
-      students: 203,
-      duration: '8 weeks',
-      price: 199,
-      image: 'https://images.unsplash.com/photo-1577877794879-40c77999dc14?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxtdXNpYyUyMGVkdWNhdGlvbiUyMGNoaWxkcmVufGVufDF8fHx8MTc1NzQzODkzNHww&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral',
-      description: 'Learn piano fundamentals and music theory through interactive lessons.',
-      features: ['One-on-one sessions', 'Sheet music reading', 'Performance practice'],
-      icon: Music
-    },
-    {
-      id: 5,
-      title: 'Chemistry Basics',
-      subject: 'science',
-      grade: 'grade-7',
-      instructor: 'Dr. Robert Kim',
-      rating: 4.6,
-      students: 167,
-      duration: '12 weeks',
-      price: 279,
-      image: 'https://images.unsplash.com/photo-1726226347716-43c040b7fa1d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx0ZWFjaGVyJTIwb25saW5lJTIwdHV0b3Jpbmd8ZW58MXx8fHwxNzU3NDM4OTI4fDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral',
-      description: 'Discover the world of chemistry with safe, virtual laboratory experiments.',
-      features: ['Virtual experiments', 'Molecular modeling', 'Real-world chemistry'],
-      icon: Zap
-    },
-    {
-      id: 6,
-      title: 'Elementary Math',
-      subject: 'math',
-      grade: 'grade-3',
-      instructor: 'Ms. Lisa Thompson',
-      rating: 4.9,
-      students: 298,
-      duration: '6 weeks',
-      price: 149,
-      image: 'https://images.unsplash.com/photo-1584644769698-4762ca337c17?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxzdHVkZW50cyUyMGxlYXJuaW5nJTIwb25saW5lfGVufDF8fHx8MTc1NzQzODkyNHww&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral',
-      description: 'Build strong mathematical foundations with fun, interactive activities.',
-      features: ['Visual learning', 'Game-based activities', 'Parent progress reports'],
-      icon: Calculator
-    }
-  ];
+  // const courses = [
+  //   {
+  //     id: 1,
+  //     title: 'Advanced Mathematics',
+  //     subject: 'math',
+  //     grade: 'grade-10',
+  //     instructor: 'Dr. Sarah Johnson',
+  //     rating: 4.9,
+  //     students: 156,
+  //     duration: '12 weeks',
+  //     price: 299,
+  //     image: 'https://images.unsplash.com/photo-1584644769698-4762ca337c17?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxzdHVkZW50cyUyMGxlYXJuaW5nJTIwb25saW5lfGVufDF8fHx8MTc1NzQzODkyNHww&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral',
+  //     description: 'Master algebra, geometry, and pre-calculus concepts with hands-on problem solving.',
+  //     features: ['Live sessions', 'Practice problems', 'Progress tracking'],
+  //     icon: Calculator
+  //   },
+  //   {
+  //     id: 2,
+  //     title: 'Physics Fundamentals',
+  //     subject: 'science',
+  //     grade: 'grade-9',
+  //     instructor: 'Prof. Michael Chen',
+  //     rating: 4.8,
+  //     students: 124,
+  //     duration: '10 weeks',
+  //     price: 249,
+  //     image: 'https://images.unsplash.com/photo-1726226347716-43c040b7fa1d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx0ZWFjaGVyJTIwb25saW5lJTIwdHV0b3Jpbmd8ZW58MXx8fHwxNzU3NDM4OTI4fDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral',
+  //     description: 'Explore the fundamental principles of physics through interactive experiments.',
+  //     features: ['Virtual labs', 'Real-world applications', 'Concept mastery'],
+  //     icon: Microscope
+  //   },
+  //   {
+  //     id: 3,
+  //     title: 'Robotics Engineering',
+  //     subject: 'robotics',
+  //     grade: 'grade-8',
+  //     instructor: 'Dr. Emily Rodriguez',
+  //     rating: 5.0,
+  //     students: 89,
+  //     duration: '16 weeks',
+  //     price: 399,
+  //     image: 'https://images.unsplash.com/photo-1603354351149-e97b9124020d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxyb2JvdGljcyUyMGVkdWNhdGlvbiUyMGtpZHN8ZW58MXx8fHwxNzU3NDM4OTMxfDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral',
+  //     description: 'Build and program robots while learning engineering and coding principles.',
+  //     features: ['Hands-on projects', 'Programming basics', 'Engineering design'],
+  //     icon: Cog
+  //   },
+  //   {
+  //     id: 4,
+  //     title: 'Music Theory & Piano',
+  //     subject: 'music',
+  //     grade: 'grade-6',
+  //     instructor: 'Ms. Amanda Foster',
+  //     rating: 4.7,
+  //     students: 203,
+  //     duration: '8 weeks',
+  //     price: 199,
+  //     image: 'https://images.unsplash.com/photo-1577877794879-40c77999dc14?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxtdXNpYyUyMGVkdWNhdGlvbiUyMGNoaWxkcmVufGVufDF8fHx8MTc1NzQzODkzNHww&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral',
+  //     description: 'Learn piano fundamentals and music theory through interactive lessons.',
+  //     features: ['One-on-one sessions', 'Sheet music reading', 'Performance practice'],
+  //     icon: Music
+  //   },
+  //   {
+  //     id: 5,
+  //     title: 'Chemistry Basics',
+  //     subject: 'science',
+  //     grade: 'grade-7',
+  //     instructor: 'Dr. Robert Kim',
+  //     rating: 4.6,
+  //     students: 167,
+  //     duration: '12 weeks',
+  //     price: 279,
+  //     image: 'https://images.unsplash.com/photo-1726226347716-43c040b7fa1d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx0ZWFjaGVyJTIwb25saW5lJTIwdHV0b3Jpbmd8ZW58MXx8fHwxNzU3NDM4OTI4fDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral',
+  //     description: 'Discover the world of chemistry with safe, virtual laboratory experiments.',
+  //     features: ['Virtual experiments', 'Molecular modeling', 'Real-world chemistry'],
+  //     icon: Zap
+  //   },
+  //   {
+  //     id: 6,
+  //     title: 'Elementary Math',
+  //     subject: 'math',
+  //     grade: 'grade-3',
+  //     instructor: 'Ms. Lisa Thompson',
+  //     rating: 4.9,
+  //     students: 298,
+  //     duration: '6 weeks',
+  //     price: 149,
+  //     image: 'https://images.unsplash.com/photo-1584644769698-4762ca337c17?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxzdHVkZW50cyUyMGxlYXJuaW5nJTIwb25saW5lfGVufDF8fHx8MTc1NzQzODkyNHww&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral',
+  //     description: 'Build strong mathematical foundations with fun, interactive activities.',
+  //     features: ['Visual learning', 'Game-based activities', 'Parent progress reports'],
+  //     icon: Calculator
+  //   }
+  // ];
 
   const subjects = [
     { value: 'all', label: 'All Subjects' },

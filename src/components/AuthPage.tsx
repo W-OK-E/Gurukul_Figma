@@ -11,6 +11,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Checkbox } from './ui/checkbox'
 import { ArrowLeft, User, GraduationCap, Users, Shield } from 'lucide-react'
 import { useAuth, UserType } from '../lib/auth-context'
+import { supabase } from '@/lib/supabaseClient'
+
 
 export function AuthPage() {
   const { login } = useAuth()
@@ -27,14 +29,60 @@ export function AuthPage() {
     agreeToTerms: false
   });
 
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [user, setUser] = useState<any>(null)
+
   const handleInputChange = (field: string, value: string | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    // Mock authentication - in real app, this would validate credentials
-    login(userType)
+  const handleSubmit = async (e: React.FormEvent) => {
+    // e.preventDefault()   // always prevent default first
+    setLoading(true)
+    if (authMode === 'signin') {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: formData.email,
+        password: formData.password,
+      })
+      if (error) {
+        
+        console.warn("BKL")
+        setError(error.message)
+      }
+      else setUser(data.user)
+    } else if (authMode === 'signup') {
+      const { data, error } = await supabase.auth.signUp({
+        email: formData.email,
+        password: formData.password,
+      })
+      if (error) setError(error.message)
+      else 
+      {
+      const authUser = data.user
+
+      // insert into custom users table
+      const { error: dbError } = await supabase
+        .from('users')
+        .insert({
+          id: authUser.id,
+          email: authUser.email,
+          userType: userType, 
+          firsName: formData.firstName,
+          lastName: formData.lastName,
+          grade: formData.grade,
+        })
+
+      if (dbError) console.error('Failed to save user data:', dbError)
+      else
+      console.log("Data insertion dbError")
+      }
+    }
+
+    login(userType) // your app logic
+    setLoading(false)
   }
 
   const userTypeOptions = [
