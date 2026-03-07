@@ -1,28 +1,36 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { Button } from './ui/button'
-import { Menu, X, BookOpen, User, LogOut, Home, GraduationCap } from 'lucide-react'
-import { useAuth } from '../lib/auth-context'
+import { Menu, X, BookOpen, Home, GraduationCap, LayoutDashboard } from 'lucide-react'
+import { supabase } from '@/lib/supabaseClient'
 
 export function Navigation() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
-  const { user, isAuthenticated, logout } = useAuth()
+  const [user, setUser] = useState<any>(null)
   const pathname = usePathname()
+
+  // Hide navigation on dashboard pages
+  if (pathname?.startsWith('/dashboard')) return null
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null)
+    })
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null)
+    })
+
+    return () => subscription.unsubscribe()
+  }, [])
 
   const publicLinks = [
     { href: '/', label: 'Home', icon: Home },
     { href: '/courses', label: 'Courses', icon: BookOpen },
   ]
-
-  const dashboardLinks = {
-    student: { href: '/dashboard/student', label: 'Dashboard', icon: GraduationCap },
-    instructor: { href: '/dashboard/instructor', label: 'Dashboard', icon: User },
-    parent: { href: '/dashboard/parent', label: 'Dashboard', icon: User },
-    admin: { href: '/dashboard/admin', label: 'Admin', icon: User },
-  }
 
   const isActiveLink = (href: string) => {
     if (!pathname) return false
@@ -30,6 +38,10 @@ export function Navigation() {
     if (href !== '/' && pathname.startsWith(href)) return true
     return false
   }
+
+  const dashboardHref = user?.user_metadata?.role === 'instructor'
+    ? '/dashboard/instructor'
+    : '/dashboard/student'
 
   return (
     <nav className="fixed top-0 left-0 right-0 bg-background/95 backdrop-blur-sm border-b border-border z-50">
@@ -49,58 +61,36 @@ export function Navigation() {
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={`flex items-center space-x-1 px-3 py-2 rounded-md transition-colors ${
-                    isActiveLink(link.href)
-                      ? 'bg-primary text-primary-foreground'
-                      : 'text-foreground hover:bg-accent hover:text-accent-foreground'
-                  }`}
+                  className={`flex items-center space-x-1 px-3 py-2 rounded-md transition-colors ${isActiveLink(link.href)
+                    ? 'bg-primary text-primary-foreground'
+                    : 'text-foreground hover:bg-accent hover:text-accent-foreground'
+                    }`}
                 >
                   <Icon className="w-4 h-4" />
                   <span>{link.label}</span>
                 </Link>
               )
             })}
-
-            {isAuthenticated && user && dashboardLinks[user] && (() => {
-              const dashboardLink = dashboardLinks[user]
-              const DashboardIcon = dashboardLink.icon
-              return (
-                <Link
-                  href={dashboardLink.href}
-                  className={`flex items-center space-x-1 px-3 py-2 rounded-md transition-colors ${
-                    isActiveLink(dashboardLink.href)
-                      ? 'bg-primary text-primary-foreground'
-                      : 'text-foreground hover:bg-accent hover:text-accent-foreground'
-                  }`}
-                >
-                  <DashboardIcon className="w-4 h-4" />
-                  <span>{dashboardLink.label}</span>
-                </Link>
-              )
-            })()}
           </div>
 
           {/* Auth Buttons */}
           <div className="hidden md:flex items-center space-x-4">
-            {isAuthenticated ? (
-              <div className="flex items-center space-x-4">
-                <span className="text-sm text-muted-foreground capitalize">
-                  Welcome, {user}
-                </span>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={logout}
-                  className="flex items-center space-x-1"
-                >
-                  <LogOut className="w-4 h-4" />
-                  <span>Logout</span>
+            {user ? (
+              <Link href={dashboardHref}>
+                <Button className="gap-2">
+                  <LayoutDashboard className="h-4 w-4" />
+                  Dashboard
                 </Button>
-              </div>
-            ) : (
-              <Link href="/auth">
-                <Button>Sign In</Button>
               </Link>
+            ) : (
+              <>
+                <Link href="/login">
+                  <Button variant="ghost">Log In</Button>
+                </Link>
+                <Link href="/signup">
+                  <Button>Sign Up</Button>
+                </Link>
+              </>
             )}
           </div>
 
@@ -127,11 +117,10 @@ export function Navigation() {
                     key={link.href}
                     href={link.href}
                     onClick={() => setIsMobileMenuOpen(false)}
-                    className={`flex items-center space-x-2 px-3 py-2 rounded-md transition-colors ${
-                      isActiveLink(link.href)
-                        ? 'bg-primary text-primary-foreground'
-                        : 'text-foreground hover:bg-accent hover:text-accent-foreground'
-                    }`}
+                    className={`flex items-center space-x-2 px-3 py-2 rounded-md transition-colors ${isActiveLink(link.href)
+                      ? 'bg-primary text-primary-foreground'
+                      : 'text-foreground hover:bg-accent hover:text-accent-foreground'
+                      }`}
                   >
                     <Icon className="w-4 h-4" />
                     <span>{link.label}</span>
@@ -139,48 +128,23 @@ export function Navigation() {
                 )
               })}
 
-              {isAuthenticated && user && dashboardLinks[user] && (() => {
-                const dashboardLink = dashboardLinks[user]
-                const DashboardIcon = dashboardLink.icon
-                return (
-                  <Link
-                    href={dashboardLink.href}
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className={`flex items-center space-x-2 px-3 py-2 rounded-md transition-colors ${
-                      isActiveLink(dashboardLink.href)
-                        ? 'bg-primary text-primary-foreground'
-                        : 'text-foreground hover:bg-accent hover:text-accent-foreground'
-                    }`}
-                  >
-                    <DashboardIcon className="w-4 h-4" />
-                    <span>{dashboardLink.label}</span>
-                  </Link>
-                )
-              })()}
-
-              <div className="pt-4 border-t border-border">
-                {isAuthenticated ? (
-                  <div className="space-y-2">
-                    <div className="px-3 py-2 text-sm text-muted-foreground capitalize">
-                      Welcome, {user}
-                    </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        logout()
-                        setIsMobileMenuOpen(false)
-                      }}
-                      className="w-full justify-start"
-                    >
-                      <LogOut className="w-4 h-4 mr-2" />
-                      Logout
+              <div className="pt-4 border-t border-border flex flex-col gap-2">
+                {user ? (
+                  <Link href={dashboardHref} onClick={() => setIsMobileMenuOpen(false)}>
+                    <Button className="w-full gap-2">
+                      <LayoutDashboard className="h-4 w-4" />
+                      Dashboard
                     </Button>
-                  </div>
-                ) : (
-                  <Link href="/auth" onClick={() => setIsMobileMenuOpen(false)}>
-                    <Button className="w-full">Sign In</Button>
                   </Link>
+                ) : (
+                  <>
+                    <Link href="/login" onClick={() => setIsMobileMenuOpen(false)}>
+                      <Button variant="outline" className="w-full text-center">Log In</Button>
+                    </Link>
+                    <Link href="/signup" onClick={() => setIsMobileMenuOpen(false)}>
+                      <Button className="w-full">Sign Up</Button>
+                    </Link>
+                  </>
                 )}
               </div>
             </div>

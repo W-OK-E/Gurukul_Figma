@@ -29,18 +29,20 @@ console.log('   ✅ Supabase client created successfully\n');
 console.log('3. Testing Database Connection...');
 async function testDatabaseConnection() {
   try {
-    // Test basic query to check connection
+    // Test basic query to check connection (system tables usually exist)
     const { data, error } = await supabase
-      .from('kv_store_5723645c')
+      .from('courses')
       .select('*')
       .limit(1);
-    
-    if (error) {
+
+    if (error && error.code !== 'PGRST116' && error.code !== '42P01') {
       console.log(`❌ Database connection failed: ${error.message}`);
       return false;
     } else {
       console.log('   ✅ Database connection successful');
-      console.log(`   📊 Found ${data ? data.length : 0} records in kv_store table`);
+      if (error && error.code === '42P01') {
+        console.log('   📊 Note: Connection works, but "courses" table doesn\'t exist yet (needs migration).');
+      }
       return true;
     }
   } catch (err) {
@@ -53,15 +55,16 @@ async function testDatabaseConnection() {
 console.log('4. Testing Authentication...');
 async function testAuthentication() {
   try {
-    // Test getting current user (should be null if not authenticated)
+    // In a script, we expect to be "Not authenticated"
     const { data: { user }, error } = await supabase.auth.getUser();
-    
-    if (error) {
-      console.log(`   ❌ Authentication test failed: ${error.message}`);
+
+    // "Auth session missing" is the expected response when not logged in
+    if (error && error.message !== 'Auth session missing!') {
+      console.log(`   ❌ Authentication service error: ${error.message}`);
       return false;
     } else {
-      console.log(`   ✅ Authentication service accessible`);
-      console.log(`   👤 Current user: ${user ? user.email : 'Not authenticated'}`);
+      console.log(`   ✅ Authentication service is REACHABLE`);
+      console.log(`   👤 Status: ${user ? 'Logged in as ' + user.email : 'No active session (Expected)'}`);
       return true;
     }
   } catch (err) {
@@ -77,19 +80,17 @@ async function testServiceRole() {
     console.log('   ⚠️  Service role key not available for testing');
     return false;
   }
-  
+
   try {
     const serviceSupabase = createClient(supabaseUrl, supabaseServiceKey);
-    const { data, error } = await serviceSupabase
-      .from('kv_store_5723645c')
-      .select('*')
-      .limit(1);
-    
-    if (error) {
-      console.log(`   ❌ Service role test failed: ${error.message}`);
+    // Use a generic query that doesn't rely on a specific table existing
+    const { data, error } = await serviceSupabase.from('profiles').select('count');
+
+    if (error && error.code !== '42P01') { // 42P01 is "table does not exist"
+      console.log(`   ❌ Service role key failed: ${error.message}`);
       return false;
     } else {
-      console.log('   ✅ Service role key works correctly');
+      console.log('   ✅ Service role key is VALID (God Mode Active)');
       return true;
     }
   } catch (err) {
@@ -103,12 +104,12 @@ async function runTests() {
   const dbConnected = await testDatabaseConnection();
   const authWorking = await testAuthentication();
   const serviceRoleWorking = await testServiceRole();
-  
+
   console.log('\n📋 Test Summary:');
   console.log(`   Database Connection: ${dbConnected ? '✅ PASS' : '❌ FAIL'}`);
   console.log(`   Authentication: ${authWorking ? '✅ PASS' : '❌ FAIL'}`);
   console.log(`   Service Role: ${serviceRoleWorking ? '✅ PASS' : '❌ FAIL'}`);
-  
+
   if (dbConnected && authWorking) {
     console.log('\n🎉 Supabase is properly configured and working!');
   } else {

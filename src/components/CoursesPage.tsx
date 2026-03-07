@@ -7,12 +7,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/
 import { Badge } from './ui/badge'
 import { Input } from './ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select'
-import { 
-  Search, 
-  Filter, 
-  Clock, 
-  Users, 
-  Star, 
+import {
+  Search,
+  Filter,
+  Clock,
+  Users,
+  Star,
   BookOpen,
   Calculator,
   Microscope,
@@ -40,6 +40,8 @@ type Course = {
   description?: string
   features?: string[]
   icon?: string
+  syllabus?: string
+  curriculums?: string
 }
 
 export function CoursesPage({ initialcourses }: { initialcourses: Course[] }) {
@@ -158,12 +160,12 @@ export function CoursesPage({ initialcourses }: { initialcourses: Course[] }) {
   ];
 
   const filteredCourses = courses.filter(course => {
-    const matchesSearch = course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         course.instructor.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         course.description.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = (course.title?.toLowerCase().includes(searchTerm.toLowerCase()) || false) ||
+      (course.instructor?.toLowerCase().includes(searchTerm.toLowerCase()) || false) ||
+      (course.description?.toLowerCase().includes(searchTerm.toLowerCase()) || false);
     const matchesGrade = selectedGrade === 'all' || course.grade === selectedGrade;
     const matchesSubject = selectedSubject === 'all' || course.subject === selectedSubject;
-    
+
     return matchesSearch && matchesGrade && matchesSubject;
   });
 
@@ -195,7 +197,7 @@ export function CoursesPage({ initialcourses }: { initialcourses: Course[] }) {
                   />
                 </div>
               </div>
-              
+
               <div>
                 <Select value={selectedGrade} onValueChange={setSelectedGrade}>
                   <SelectTrigger>
@@ -250,7 +252,10 @@ export function CoursesPage({ initialcourses }: { initialcourses: Course[] }) {
                   />
                   <div className="absolute top-4 left-4">
                     <Badge variant="secondary" className="flex items-center space-x-1">
-                      <Icon className="w-3 h-3" />
+                      {course.subject === 'math' && <Calculator className="w-3 h-3" />}
+                      {course.subject === 'science' && <Microscope className="w-3 h-3" />}
+                      {course.subject === 'robotics' && <Cog className="w-3 h-3" />}
+                      {course.subject === 'music' && <Music className="w-3 h-3" />}
                       <span className="capitalize">{course.subject}</span>
                     </Badge>
                   </div>
@@ -298,16 +303,26 @@ export function CoursesPage({ initialcourses }: { initialcourses: Course[] }) {
                   <div className="space-y-2">
                     <div className="text-sm">Instructor: {course.instructor}</div>
                     <div className="flex flex-wrap gap-1">
-                      {course.features.map((feature, index) => (
+                      {course.features?.map((feature, index) => (
                         <Badge key={index} variant="outline" className="text-xs">
                           {feature}
                         </Badge>
                       ))}
                     </div>
+                    {course.syllabus && (
+                      <div className="text-xs text-muted-foreground mt-2">
+                        <strong>Syllabus:</strong> {course.syllabus}
+                      </div>
+                    )}
+                    {course.curriculums && (
+                      <div className="text-xs text-muted-foreground">
+                        <strong>Curriculums:</strong> {course.curriculums}
+                      </div>
+                    )}
                   </div>
 
                   <div className="pt-4 space-y-2">
-                    <Link href="/auth">
+                    <Link href="/register">
                       <Button className="w-full">
                         Enroll Now
                       </Button>
@@ -344,10 +359,10 @@ export function CoursesPage({ initialcourses }: { initialcourses: Course[] }) {
         <div className="mt-16 text-center bg-accent/20 rounded-lg p-12">
           <h2 className="text-2xl md:text-3xl mb-4">Can't find what you're looking for?</h2>
           <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
-            We offer custom tutoring programs tailored to your specific needs. 
+            We offer custom tutoring programs tailored to your specific needs.
             Get in touch with our academic advisors to design a personalized learning plan.
           </p>
-          <Link href="/auth">
+          <Link href="/register">
             <Button size="lg">
               Request Custom Program
             </Button>

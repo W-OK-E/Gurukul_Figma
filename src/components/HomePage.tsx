@@ -5,19 +5,20 @@ import Link from 'next/link'
 import { Button } from './ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card'
 import { Badge } from './ui/badge'
-import { 
-  BookOpen, 
-  Users, 
-  Video, 
-  Award, 
-  Clock, 
+import {
+  BookOpen,
+  Users,
+  Video,
+  Award,
+  Clock,
   Star,
   Play,
   CheckCircle,
   Globe,
   Shield,
   Zap,
-  TrendingUp
+  TrendingUp,
+  LayoutDashboard
 } from 'lucide-react'
 import { ImageWithFallback } from './figma/ImageWithFallback'
 
@@ -103,6 +104,20 @@ export function HomePage() {
     }
   ]
 
+  const [user, setUser] = React.useState<any>(null)
+
+  React.useEffect(() => {
+    import('@/lib/supabaseClient').then(({ supabase }) => {
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        setUser(session?.user ?? null)
+      })
+    })
+  }, [])
+
+  const dashboardHref = user?.user_metadata?.role === 'instructor'
+    ? '/dashboard/instructor'
+    : '/dashboard/student'
+
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
@@ -119,23 +134,34 @@ export function HomePage() {
                   Personalized Online Tutoring for K-12 Students
                 </h1>
                 <p className="text-xl text-muted-foreground max-w-2xl">
-                  Expert tutors, interactive lessons, and comprehensive progress tracking. 
+                  Expert tutors, interactive lessons, and comprehensive progress tracking.
                   Help your child excel in Math, Science, Robotics, Music, and more.
                 </p>
               </div>
-              
+
               <div className="flex flex-col sm:flex-row gap-4">
-                <Link href="/courses">
-                  <Button size="lg" className="text-lg px-8 py-6">
-                    <Play className="w-5 h-5 mr-2" />
-                    Start Learning Today
-                  </Button>
-                </Link>
-                <Link href="/auth">
-                  <Button variant="outline" size="lg" className="text-lg px-8 py-6">
-                    Book Free Trial
-                  </Button>
-                </Link>
+                {user ? (
+                  <Link href={dashboardHref}>
+                    <Button size="lg" className="text-lg px-8 py-6 gap-2">
+                      <LayoutDashboard className="w-5 h-5" />
+                      Go to Dashboard
+                    </Button>
+                  </Link>
+                ) : (
+                  <>
+                    <Link href="/courses">
+                      <Button size="lg" className="text-lg px-8 py-6">
+                        <Play className="w-5 h-5 mr-2" />
+                        Start Learning Today
+                      </Button>
+                    </Link>
+                    <Link href="/register">
+                      <Button variant="outline" size="lg" className="text-lg px-8 py-6">
+                        Book Free Trial
+                      </Button>
+                    </Link>
+                  </>
+                )}
               </div>
 
               <div className="grid grid-cols-3 gap-8 pt-8">
@@ -272,13 +298,13 @@ export function HomePage() {
         <div className="max-w-4xl mx-auto text-center space-y-8">
           <h2 className="text-3xl md:text-4xl">Ready to Start Your Learning Journey?</h2>
           <p className="text-xl opacity-90 max-w-2xl mx-auto">
-            Join thousands of students who are already excelling with personalized online tutoring. 
+            Join thousands of students who are already excelling with personalized online tutoring.
             Get started with a free trial today!
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/auth">
-              <Button 
-                size="lg" 
+            <Link href="/register">
+              <Button
+                size="lg"
                 variant="secondary"
                 className="text-lg px-8 py-6"
               >
@@ -286,8 +312,8 @@ export function HomePage() {
               </Button>
             </Link>
             <Link href="/courses">
-              <Button 
-                size="lg" 
+              <Button
+                size="lg"
                 variant="outline"
                 className="text-lg px-8 py-6 bg-transparent border-primary-foreground text-primary-foreground hover:bg-primary-foreground hover:text-primary"
               >

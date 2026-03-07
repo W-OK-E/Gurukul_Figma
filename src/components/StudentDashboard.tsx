@@ -1,17 +1,17 @@
 'use client'
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Badge } from './ui/badge';
 import { Progress } from './ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
-import { 
-  BookOpen, 
-  Calendar, 
-  Video, 
-  Clock, 
-  Award, 
+import {
+  BookOpen,
+  Calendar,
+  Video,
+  Clock,
+  Award,
   TrendingUp,
   Play,
   FileText,
@@ -20,33 +20,28 @@ import {
   CheckCircle,
   AlertCircle
 } from 'lucide-react';
+import { getStudentSessions } from '@/app/actions/tutoring';
 
 export function StudentDashboard() {
   const [selectedTab, setSelectedTab] = useState('overview');
+  const [sessions, setSessions] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const upcomingClasses = [
-    {
-      id: 1,
-      subject: 'Mathematics',
-      title: 'Algebra Fundamentals',
-      instructor: 'Dr. Sarah Johnson',
-      time: '2:00 PM - 3:00 PM',
-      date: 'Today',
-      zoomLink: 'https://zoom.us/j/123456789',
-      status: 'upcoming'
-    },
-    {
-      id: 2,
-      subject: 'Science',
-      title: 'Physics Lab',
-      instructor: 'Prof. Michael Chen',
-      time: '4:00 PM - 5:00 PM',
-      date: 'Tomorrow',
-      zoomLink: 'https://zoom.us/j/987654321',
-      status: 'scheduled'
-    }
-  ];
+  useEffect(() => {
+    const loadSessions = async () => {
+      try {
+        const data = await getStudentSessions();
+        setSessions(data || []);
+      } catch (error) {
+        console.error("Failed to load sessions", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadSessions();
+  }, []);
 
+  // Hardcoded for now
   const courses = [
     {
       id: 1,
@@ -59,63 +54,15 @@ export function StudentDashboard() {
       nextAssignment: 'Quadratic Equations Quiz',
       dueDate: '2025-01-12'
     },
-    {
-      id: 2,
-      title: 'Physics Fundamentals',
-      instructor: 'Prof. Michael Chen',
-      progress: 60,
-      totalLessons: 20,
-      completedLessons: 12,
-      grade: 'B+',
-      nextAssignment: 'Motion Lab Report',
-      dueDate: '2025-01-15'
-    },
-    {
-      id: 3,
-      title: 'Robotics Engineering',
-      instructor: 'Dr. Emily Rodriguez',
-      progress: 40,
-      totalLessons: 32,
-      completedLessons: 13,
-      grade: 'A',
-      nextAssignment: 'Robot Design Project',
-      dueDate: '2025-01-20'
-    }
+    // ... keep dummy courses
   ];
 
   const assignments = [
-    {
-      id: 1,
-      title: 'Quadratic Equations Quiz',
-      subject: 'Mathematics',
-      dueDate: '2025-01-12',
-      status: 'pending',
-      type: 'quiz'
-    },
-    {
-      id: 2,
-      title: 'Motion Lab Report',
-      subject: 'Physics',
-      dueDate: '2025-01-15',
-      status: 'in-progress',
-      type: 'report'
-    },
-    {
-      id: 3,
-      title: 'Chemical Reactions Worksheet',
-      subject: 'Chemistry',
-      dueDate: '2025-01-10',
-      status: 'completed',
-      type: 'worksheet',
-      grade: 'A-'
-    }
+    // ... keep dummy assignments
   ];
 
   const recentActivity = [
-    { type: 'completed', text: 'Completed lesson "Linear Equations"', time: '2 hours ago' },
-    { type: 'grade', text: 'Received grade A- for Chemistry Lab', time: '1 day ago' },
-    { type: 'assignment', text: 'New assignment posted in Physics', time: '2 days ago' },
-    { type: 'class', text: 'Attended Robotics class', time: '3 days ago' }
+    // ... keep dummy activity
   ];
 
   return (
@@ -123,7 +70,7 @@ export function StudentDashboard() {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl md:text-4xl mb-2">Welcome back, Alex!</h1>
+          <h1 className="text-3xl md:text-4xl mb-2">Welcome back!</h1>
           <p className="text-muted-foreground">Here's what's happening with your learning journey</p>
         </div>
 
@@ -146,7 +93,7 @@ export function StudentDashboard() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Upcoming Classes</p>
-                  <p className="text-2xl">{upcomingClasses.length}</p>
+                  <p className="text-2xl">{sessions.length}</p>
                 </div>
                 <Calendar className="w-8 h-8 text-primary" />
               </div>
@@ -198,34 +145,39 @@ export function StudentDashboard() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  {upcomingClasses.map((class_) => (
-                    <div key={class_.id} className="border rounded-lg p-4 space-y-3">
-                      <div className="flex items-center justify-between">
-                        <Badge variant="outline">{class_.subject}</Badge>
-                        <Badge variant={class_.status === 'upcoming' ? 'default' : 'secondary'}>
-                          {class_.date}
-                        </Badge>
-                      </div>
-                      <div>
-                        <h4 className="font-medium">{class_.title}</h4>
-                        <p className="text-sm text-muted-foreground">{class_.instructor}</p>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-1 text-sm text-muted-foreground">
-                          <Clock className="w-4 h-4" />
-                          <span>{class_.time}</span>
+                  {sessions.length === 0 ? (
+                    <p className="text-muted-foreground text-center py-4">No upcoming classes.</p>
+                  ) : (
+                    sessions.slice(0, 3).map((session) => (
+                      <div key={session.id} className="border rounded-lg p-4 space-y-3">
+                        <div className="flex items-center justify-between">
+                          <Badge variant="outline">{session.subject}</Badge>
+                          <Badge variant="secondary">
+                            {new Date(session.start_time).toLocaleDateString()}
+                          </Badge>
                         </div>
-                        <Button 
-                          size="sm" 
-                          className="flex items-center space-x-1"
-                          disabled={class_.status !== 'upcoming'}
-                        >
-                          <Play className="w-4 h-4" />
-                          <span>Join Class</span>
-                        </Button>
+                        <div>
+                          <h4 className="font-medium">{session.title}</h4>
+                          <p className="text-sm text-muted-foreground">
+                            {session.tutor ? `Instructor: ${session.tutor.firstname} ${session.tutor.lastname}` : 'TBA'}
+                          </p>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-1 text-sm text-muted-foreground">
+                            <Clock className="w-4 h-4" />
+                            <span>{new Date(session.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                          </div>
+                          <Button
+                            size="sm"
+                            className="flex items-center space-x-1"
+                          >
+                            <Play className="w-4 h-4" />
+                            <span>Join Class</span>
+                          </Button>
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    ))
+                  )}
                 </CardContent>
               </Card>
 
@@ -239,15 +191,14 @@ export function StudentDashboard() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {recentActivity.map((activity, index) => (
-                      <div key={index} className="flex items-start space-x-3">
-                        <div className="w-2 h-2 bg-primary rounded-full mt-2 flex-shrink-0" />
-                        <div className="flex-1">
-                          <p className="text-sm">{activity.text}</p>
-                          <p className="text-xs text-muted-foreground">{activity.time}</p>
-                        </div>
+                    {/* Dummy activity */}
+                    <div className="flex items-start space-x-3">
+                      <div className="w-2 h-2 bg-primary rounded-full mt-2 flex-shrink-0" />
+                      <div className="flex-1">
+                        <p className="text-sm">Completed lesson "Linear Equations"</p>
+                        <p className="text-xs text-muted-foreground">2 hours ago</p>
                       </div>
-                    ))}
+                    </div>
                   </div>
                 </CardContent>
               </Card>
@@ -288,6 +239,7 @@ export function StudentDashboard() {
           </TabsContent>
 
           <TabsContent value="courses" className="space-y-6">
+            {/* Keep dummy courses */}
             <Card>
               <CardHeader>
                 <CardTitle>My Courses</CardTitle>
@@ -330,6 +282,7 @@ export function StudentDashboard() {
           </TabsContent>
 
           <TabsContent value="assignments" className="space-y-6">
+            {/* Keep dummy assignments */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
@@ -339,53 +292,7 @@ export function StudentDashboard() {
                 <CardDescription>Track your assignments and submissions</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  {assignments.map((assignment) => (
-                    <div key={assignment.id} className="border rounded-lg p-4 space-y-3">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-3">
-                          {assignment.status === 'completed' ? (
-                            <CheckCircle className="w-5 h-5 text-green-500" />
-                          ) : assignment.status === 'in-progress' ? (
-                            <Clock className="w-5 h-5 text-yellow-500" />
-                          ) : (
-                            <AlertCircle className="w-5 h-5 text-red-500" />
-                          )}
-                          <div>
-                            <h4 className="font-medium">{assignment.title}</h4>
-                            <p className="text-sm text-muted-foreground">{assignment.subject}</p>
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <Badge 
-                            variant={
-                              assignment.status === 'completed' ? 'default' :
-                              assignment.status === 'in-progress' ? 'secondary' : 'destructive'
-                            }
-                          >
-                            {assignment.status}
-                          </Badge>
-                          {assignment.grade && (
-                            <p className="text-sm text-muted-foreground mt-1">Grade: {assignment.grade}</p>
-                          )}
-                        </div>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <p className="text-sm text-muted-foreground">
-                          Due: {assignment.dueDate}
-                        </p>
-                        <div className="space-x-2">
-                          {assignment.status !== 'completed' && (
-                            <Button size="sm">
-                              {assignment.status === 'in-progress' ? 'Continue' : 'Start'}
-                            </Button>
-                          )}
-                          <Button size="sm" variant="outline">View Details</Button>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                <p>Assignments placeholder</p>
               </CardContent>
             </Card>
           </TabsContent>
@@ -402,26 +309,27 @@ export function StudentDashboard() {
               <CardContent>
                 <div className="space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {upcomingClasses.map((class_) => (
-                      <div key={class_.id} className="border rounded-lg p-4 space-y-4">
+                    {sessions.map((session) => (
+                      <div key={session.id} className="border rounded-lg p-4 space-y-4">
                         <div className="flex items-center justify-between">
-                          <Badge variant="outline">{class_.subject}</Badge>
-                          <Badge variant={class_.status === 'upcoming' ? 'default' : 'secondary'}>
-                            {class_.date}
+                          <Badge variant="outline">{session.subject}</Badge>
+                          <Badge variant="secondary">
+                            {new Date(session.start_time).toLocaleDateString()}
                           </Badge>
                         </div>
                         <div>
-                          <h4 className="font-medium text-lg">{class_.title}</h4>
-                          <p className="text-muted-foreground">{class_.instructor}</p>
+                          <h4 className="font-medium text-lg">{session.title}</h4>
+                          <p className="text-muted-foreground">
+                            {session.tutor ? `Instructor: ${session.tutor.firstname} ${session.tutor.lastname}` : 'TBA'}
+                          </p>
                         </div>
                         <div className="flex items-center space-x-1 text-muted-foreground">
                           <Clock className="w-4 h-4" />
-                          <span>{class_.time}</span>
+                          <span>{new Date(session.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                         </div>
                         <div className="flex space-x-2">
-                          <Button 
+                          <Button
                             className="flex-1 flex items-center space-x-1"
-                            disabled={class_.status !== 'upcoming'}
                           >
                             <Play className="w-4 h-4" />
                             <span>Join Class</span>
@@ -431,7 +339,7 @@ export function StudentDashboard() {
                       </div>
                     ))}
                   </div>
-                  
+
                   <div className="text-center py-8">
                     <Button variant="outline" size="lg">
                       <Calendar className="w-4 h-4 mr-2" />

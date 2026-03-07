@@ -1,0 +1,10 @@
+{
+  "importMap": null,
+  "compilerOptions": {
+    "allowImportingTsExtensions": true,
+    "lib": ["ESNext"],
+    "strict": false
+  },
+  "tasks": {},
+  "unstable": true
+}

@@ -1,11 +1,18 @@
+# Gurukul - K-12 Tutoring Platform
 
-  # Design Tutoring Website
+A comprehensive tutoring platform built with Next.js and Supabase.
 
-  This is a code bundle for Design Tutoring Website. The original project is available at https://www.figma.com/design/C59QSpED2fPdAGlMrwv7Tt/Design-Tutoring-Website.
+## New Features
+- **Integrated Auth**: Support for Student and Instructor roles.
+- **Role-Based Dashboards**: 
+  - **Students**: Tracks courses, schedule, and progress.
+  - **Instructors**: Manage students, sessions, and course performance.
+- **Secure Database**: Supabase integration with Row Level Security.
 
-  ## Running the code
+## Getting Started
+1. Run `npm install`
+2. Configure `.env.local` using Supabase credentials.
+3. Run `npm run dev`
 
-  Run `npm i` to install the dependencies.
-
-  Run `npm run dev` to start the development server.
-  
+## Deployment & Expansion
+See [next-steps.md](./next-steps.md) for detailed instructions on how to deploy to the free tier and expand the platform features.
