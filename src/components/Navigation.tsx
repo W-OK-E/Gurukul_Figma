@@ -30,6 +30,7 @@ export function Navigation() {
   const publicLinks = [
     { href: '/', label: 'Home', icon: Home },
     { href: '/courses', label: 'Courses', icon: BookOpen },
+    { href: '/teachers', label: 'Teachers', icon: GraduationCap },
   ]
 
   const isActiveLink = (href: string) => {
@@ -87,8 +88,8 @@ export function Navigation() {
                 <Link href="/login">
                   <Button variant="ghost">Log In</Button>
                 </Link>
-                <Link href="/signup">
-                  <Button>Sign Up</Button>
+                <Link href="/register">
+                  <Button>Book Free Trial</Button>
                 </Link>
               </>
             )}
@@ -141,8 +142,8 @@ export function Navigation() {
                     <Link href="/login" onClick={() => setIsMobileMenuOpen(false)}>
                       <Button variant="outline" className="w-full text-center">Log In</Button>
                     </Link>
-                    <Link href="/signup" onClick={() => setIsMobileMenuOpen(false)}>
-                      <Button className="w-full">Sign Up</Button>
+                    <Link href="/register" onClick={() => setIsMobileMenuOpen(false)}>
+                      <Button className="w-full">Book Free Trial</Button>
                     </Link>
                   </>
                 )}

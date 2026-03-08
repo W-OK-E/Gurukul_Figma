@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -22,6 +22,14 @@ export function AuthForm({ mode }: AuthFormProps) {
     const [password, setPassword] = useState('')
     const [fullName, setFullName] = useState('')
     const [role, setRole] = useState<'student' | 'instructor'>('student')
+
+    useEffect(() => {
+        // Disable signup mode as requested - accounts are admin-created
+        if (mode === 'signup') {
+            router.push('/login')
+            toast.error('Self-sign up is disabled. Please contact an admin for credentials.')
+        }
+    }, [mode, router])
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -149,10 +157,7 @@ export function AuthForm({ mode }: AuthFormProps) {
                 <div className="mt-6 text-center text-sm">
                     {mode === 'login' ? (
                         <p className="text-muted-foreground">
-                            Don&apos;t have an account?{' '}
-                            <Button variant="link" className="p-0 h-auto font-semibold" onClick={() => router.push('/signup')}>
-                                Sign Up
-                            </Button>
+                            Account creation is restricted to administrators. Contact support for assistance.
                         </p>
                     ) : (
                         <p className="text-muted-foreground">

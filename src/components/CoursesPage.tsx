@@ -20,8 +20,19 @@ import {
   Cog,
   Globe,
   Palette,
-  Zap
+  Zap,
+  Info,
+  GraduationCap,
+  Calendar
 } from 'lucide-react'
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ImageWithFallback } from './figma/ImageWithFallback'
 import { supabase } from "@/lib/supabaseClient";
 
@@ -42,6 +53,8 @@ type Course = {
   icon?: string
   syllabus?: string
   curriculums?: string
+  instructor_id?: string
+  instructor_bio?: string
 }
 
 export function CoursesPage({ initialcourses }: { initialcourses: Course[] }) {
@@ -159,6 +172,8 @@ export function CoursesPage({ initialcourses }: { initialcourses: Course[] }) {
     }))
   ];
 
+  const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
+
   const filteredCourses = courses.filter(course => {
     const matchesSearch = (course.title?.toLowerCase().includes(searchTerm.toLowerCase()) || false) ||
       (course.instructor?.toLowerCase().includes(searchTerm.toLowerCase()) || false) ||
@@ -171,11 +186,139 @@ export function CoursesPage({ initialcourses }: { initialcourses: Course[] }) {
 
   return (
     <div className="min-h-screen py-8 px-4 sm:px-6 lg:px-8">
+      {/* Course Detail Sheet */}
+      <Sheet open={!!selectedCourse} onOpenChange={(open) => !open && setSelectedCourse(null)}>
+        <SheetContent className="sm:max-w-xl overflow-y-auto">
+          {selectedCourse && (
+            <>
+              <SheetHeader>
+                <div className="flex gap-4 items-start">
+                  <div className="w-20 h-20 rounded-lg overflow-hidden shrink-0">
+                    <ImageWithFallback
+                      src={selectedCourse.image}
+                      alt={selectedCourse.title}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <SheetTitle className="text-2xl">{selectedCourse.title}</SheetTitle>
+                    <SheetDescription className="flex items-center gap-2">
+                      <Badge variant="secondary">{selectedCourse.subject}</Badge>
+                      <Badge variant="outline">{grades.find(g => g.value === selectedCourse.grade)?.label}</Badge>
+                    </SheetDescription>
+                  </div>
+                </div>
+              </SheetHeader>
+
+              <Tabs defaultValue="overview" className="mt-8">
+                <TabsList className="grid w-full grid-cols-3">
+                  <TabsTrigger value="overview">Overview</TabsTrigger>
+                  <TabsTrigger value="syllabus">Syllabus</TabsTrigger>
+                  <TabsTrigger value="instructor">Instructor</TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="overview" className="pt-6 space-y-6">
+                  <div className="space-y-2">
+                    <h3 className="font-semibold text-lg flex items-center gap-2">
+                      <Info className="h-5 w-5 text-primary" /> About Course
+                    </h3>
+                    <p className="text-muted-foreground leading-relaxed">
+                      {selectedCourse.description}
+                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="p-4 rounded-xl bg-accent/20 space-y-1">
+                      <div className="text-sm text-muted-foreground flex items-center gap-2">
+                        <Clock className="h-4 w-4" /> Duration
+                      </div>
+                      <div className="font-semibold">{selectedCourse.duration}</div>
+                    </div>
+                    <div className="p-4 rounded-xl bg-accent/20 space-y-1">
+                      <div className="text-sm text-muted-foreground flex items-center gap-2">
+                        <Users className="h-4 w-4" /> Students
+                      </div>
+                      <div className="font-semibold">{selectedCourse.students}+ enrolled</div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-4 pt-4">
+                    <h3 className="font-semibold">Key Highlights</h3>
+                    <div className="grid grid-cols-1 gap-2">
+                      {selectedCourse.features?.map((feature, i) => (
+                        <div key={i} className="flex items-center gap-2 text-sm">
+                          <Zap className="h-4 w-4 text-yellow-500 fill-current" />
+                          {feature}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="pt-6 border-t border-border mt-auto">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="text-3xl font-bold">${selectedCourse.price}</div>
+                      <div className="text-sm text-muted-foreground">one-time payment</div>
+                    </div>
+                    <Link href="/register">
+                      <Button className="w-full text-lg py-6" onClick={() => setSelectedCourse(null)}>
+                        Enroll Now
+                      </Button>
+                    </Link>
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="syllabus" className="pt-6 space-y-4">
+                  <h3 className="font-semibold text-lg flex items-center gap-2">
+                    <BookOpen className="h-5 w-5 text-primary" /> Course Syllabus
+                  </h3>
+                  <div className="bg-muted/50 p-6 rounded-xl prose prose-sm max-w-none">
+                    <p className="whitespace-pre-wrap text-muted-foreground font-medium">
+                      {selectedCourse.syllabus || 'No detailed syllabus available yet. Please contact us for details.'}
+                    </p>
+                  </div>
+                  {selectedCourse.curriculums && (
+                    <div className="p-4 border border-dashed border-primary/20 rounded-lg bg-primary/5">
+                      <div className="text-xs font-bold text-primary uppercase mb-1">Aligned with</div>
+                      <div className="text-sm font-semibold">{selectedCourse.curriculums}</div>
+                    </div>
+                  )}
+                </TabsContent>
+
+                <TabsContent value="instructor" className="pt-6 space-y-6">
+                  <div className="flex items-center gap-4">
+                    <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
+                      <GraduationCap className="h-8 w-8 text-primary" />
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-bold">{selectedCourse.instructor}</h3>
+                      <div className="flex items-center text-sm text-yellow-600">
+                        <Star className="h-4 w-4 fill-current mr-1" /> {selectedCourse.rating} Instructor Rating
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <h4 className="font-semibold">Professional Background</h4>
+                    <p className="text-muted-foreground italic border-l-4 border-primary/20 pl-4 py-1">
+                      {selectedCourse.instructor_bio || 'Experienced education faculty specializing in ' + selectedCourse.subject + ' programs for K-12 students.'}
+                    </p>
+                  </div>
+
+                  <Button variant="outline" className="w-full" asChild>
+                    <Link href="/teachers">View Faculty Profile</Link>
+                  </Button>
+                </TabsContent>
+              </Tabs>
+            </>
+          )}
+        </SheetContent>
+      </Sheet>
+
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="mb-12">
+        <div className="mb-12 pt-8">
           <div className="text-center space-y-4">
-            <h1 className="text-4xl md:text-5xl">Browse Our Courses</h1>
+            <h1 className="text-4xl md:text-5xl font-bold">Browse Our Courses</h1>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
               Discover personalized learning experiences designed to help K-12 students excel in their studies
             </p>
@@ -184,7 +327,7 @@ export function CoursesPage({ initialcourses }: { initialcourses: Course[] }) {
 
         {/* Filters */}
         <div className="mb-8">
-          <Card className="p-6">
+          <Card className="p-6 border-primary/5 shadow-xl bg-card/50 backdrop-blur-sm">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div className="md:col-span-2">
                 <div className="relative">
@@ -193,14 +336,14 @@ export function CoursesPage({ initialcourses }: { initialcourses: Course[] }) {
                     placeholder="Search courses, instructors..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10"
+                    className="pl-10 h-11"
                   />
                 </div>
               </div>
 
               <div>
                 <Select value={selectedGrade} onValueChange={setSelectedGrade}>
-                  <SelectTrigger>
+                  <SelectTrigger className="h-11">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -215,7 +358,7 @@ export function CoursesPage({ initialcourses }: { initialcourses: Course[] }) {
 
               <div>
                 <Select value={selectedSubject} onValueChange={setSelectedSubject}>
-                  <SelectTrigger>
+                  <SelectTrigger className="h-11">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -327,7 +470,7 @@ export function CoursesPage({ initialcourses }: { initialcourses: Course[] }) {
                         Enroll Now
                       </Button>
                     </Link>
-                    <Button variant="outline" className="w-full">
+                    <Button variant="outline" className="w-full" onClick={() => setSelectedCourse(course)}>
                       View Details
                     </Button>
                   </div>

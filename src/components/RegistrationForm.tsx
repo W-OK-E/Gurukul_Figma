@@ -100,9 +100,9 @@ export function RegistrationForm() {
 
                 <Card className="shadow-xl">
                     <CardHeader className="text-center space-y-2">
-                        <CardTitle className="text-3xl font-bold">Register for Gurukul</CardTitle>
+                        <CardTitle className="text-3xl font-bold">Book a Free Trial</CardTitle>
                         <CardDescription>
-                            Fill out the form below to start your learning journey and book a free demo.
+                            Fill out the form below. After your free demo, an admin will provide your personalized login credentials.
                         </CardDescription>
                     </CardHeader>
 

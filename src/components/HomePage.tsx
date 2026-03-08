@@ -18,7 +18,8 @@ import {
   Shield,
   Zap,
   TrendingUp,
-  LayoutDashboard
+  LayoutDashboard,
+  Calendar
 } from 'lucide-react'
 import { ImageWithFallback } from './figma/ImageWithFallback'
 
@@ -149,15 +150,15 @@ export function HomePage() {
                   </Link>
                 ) : (
                   <>
-                    <Link href="/courses">
-                      <Button size="lg" className="text-lg px-8 py-6">
-                        <Play className="w-5 h-5 mr-2" />
-                        Start Learning Today
+                    <Link href="/register">
+                      <Button size="lg" className="text-lg px-8 py-6 gap-2">
+                        <Calendar className="w-5 h-5" />
+                        Book Free Trial
                       </Button>
                     </Link>
-                    <Link href="/register">
+                    <Link href="/courses">
                       <Button variant="outline" size="lg" className="text-lg px-8 py-6">
-                        Book Free Trial
+                        Browse Courses
                       </Button>
                     </Link>
                   </>
