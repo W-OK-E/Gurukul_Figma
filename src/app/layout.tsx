@@ -2,13 +2,19 @@ import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import '../styles/globals.css'
 import { Navigation } from '../components/Navigation'
+import { Toaster } from 'sonner'
 
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'TutorPlatform - K-12 Tutoring Excellence',
+  title: 'Gurukul - K-12 Tutoring Excellence',
   description: 'Comprehensive tutoring platform for K-12 students with expert instructors in robotics, music, science, and math.',
   keywords: 'tutoring, K-12, education, online learning, robotics, music, science, math',
+}
+
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
 }
 
 export default function RootLayout({
@@ -24,6 +30,7 @@ export default function RootLayout({
           <main className="pt-16">
             {children}
           </main>
+          <Toaster position="top-center" richColors />
         </div>
       </body>
     </html>

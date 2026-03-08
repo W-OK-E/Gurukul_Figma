@@ -12,6 +12,7 @@ import { ArrowLeft, GraduationCap, Phone, MapPin, Globe, Clock, Calendar, Dollar
 import Link from 'next/link'
 import { supabase } from '@/lib/supabaseClient'
 import { toast } from 'sonner'
+import { sendNotificationAction } from '@/app/actions/register'
 
 export function RegistrationForm() {
     const router = useRouter()
@@ -49,6 +50,7 @@ export function RegistrationForm() {
         setLoading(true)
 
         try {
+            // 1. Supabase insert
             const { error } = await supabase
                 .from('registrations')
                 .insert([{
@@ -68,12 +70,24 @@ export function RegistrationForm() {
 
             if (error) throw error
 
-            toast.success('Registration submitted successfully! We will contact you soon.')
-            router.push('/')
+            // 2. Send email notification (fails silently if RESEND_API_KEY missing)
+            await sendNotificationAction({
+                ...formData,
+                parentPhone: formData.phoneNumber
+            });
+
+            toast.success('Registration submitted successfully! Our team will contact you soon.', {
+                duration: 5000,
+            })
+
+            // 3. Small delay so they can see the message
+            setTimeout(() => {
+                router.push('/')
+            }, 3000)
+
         } catch (error: any) {
             console.error('Error submitting registration:', error)
-            toast.error('Failed to submit registration. Please try again.')
-        } finally {
+            toast.error(error.message || 'Failed to submit registration. Please try again.')
             setLoading(false)
         }
     }
