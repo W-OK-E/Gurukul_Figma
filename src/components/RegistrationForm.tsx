@@ -71,10 +71,16 @@ export function RegistrationForm() {
             if (error) throw error
 
             // 2. Send email notification (fails silently if RESEND_API_KEY missing)
-            await sendNotificationAction({
-                ...formData,
-                parentPhone: formData.phoneNumber
-            });
+            // Wrapped in try-catch so registration success isn't blocked by email service issues
+            try {
+                await sendNotificationAction({
+                    ...formData,
+                    parentPhone: formData.phoneNumber
+                });
+            } catch (emailErr) {
+                console.error('Email notification failed but registration succeeded:', emailErr);
+                // Not throwing here because the DB insert already worked.
+            }
 
             toast.success('Registration submitted successfully! Our team will contact you soon.', {
                 duration: 5000,
@@ -87,7 +93,9 @@ export function RegistrationForm() {
 
         } catch (error: any) {
             console.error('Error submitting registration:', error)
-            toast.error(error.message || 'Failed to submit registration. Please try again.')
+            // Check if it's a supabase error or something else
+            const errorMessage = error.message || 'Failed to submit registration. Please try again.'
+            toast.error(errorMessage)
             setLoading(false)
         }
     }
