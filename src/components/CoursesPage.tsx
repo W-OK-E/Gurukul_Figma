@@ -174,6 +174,10 @@ export function CoursesPage({ initialcourses }: { initialcourses: Course[] }) {
 
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
 
+  React.useEffect(() => {
+    console.log('CoursesPage mounted. initialcourses:', initialcourses.length);
+  }, [initialcourses]);
+
   const filteredCourses = courses.filter(course => {
     const matchesSearch = (course.title?.toLowerCase().includes(searchTerm.toLowerCase()) || false) ||
       (course.instructor?.toLowerCase().includes(searchTerm.toLowerCase()) || false) ||
@@ -389,7 +393,7 @@ export function CoursesPage({ initialcourses }: { initialcourses: Course[] }) {
               <Card key={course.id} className="group hover:shadow-lg transition-all duration-300 overflow-hidden">
                 <div className="relative">
                   <ImageWithFallback
-                    src={course.image}
+                    src={course.image || 'https://images.unsplash.com/photo-1544377103-33bcadbb3ee9?q=80&w=1080'}
                     alt={course.title}
                     className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
                   />

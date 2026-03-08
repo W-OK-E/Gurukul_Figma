@@ -23,12 +23,17 @@ export default function TeachersPage() {
 
     useEffect(() => {
         async function fetchTeachers() {
+            // Fetching from a dedicated 'faculty' table used for public display
             const { data, error } = await supabase
-                .from('profiles')
+                .from('faculty')
                 .select('*')
-                .eq('role', 'instructor')
 
-            if (data) setTeachers(data)
+            if (data && data.length > 0) {
+                setTeachers(data)
+            } else {
+                // Fallback for demo if DB is totally empty
+                console.log('No faculty data found, check faculty table in Supabase')
+            }
             setLoading(false)
         }
         fetchTeachers()
