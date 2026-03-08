@@ -19,40 +19,74 @@ import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 
 interface SidebarProps {
-    role: 'student' | 'instructor'
+    role: 'student' | 'instructor' | 'admin'
 }
 
 export function DashboardSidebar({ role }: SidebarProps) {
     const pathname = usePathname()
     const router = useRouter()
 
-    const links = [
-        {
-            name: 'Overview',
-            href: `/dashboard/${role}`,
-            icon: LayoutDashboard
-        },
-        {
-            name: role === 'student' ? 'My Courses' : 'Manage Courses',
-            href: `/dashboard/${role}/courses`,
-            icon: BookOpen
-        },
-        {
-            name: 'Schedule',
-            href: `/dashboard/${role}/schedule`,
-            icon: Calendar
-        },
-        {
-            name: role === 'student' ? 'My Instructors' : 'My Students',
-            href: `/dashboard/${role}/people`,
-            icon: Users
-        },
-        {
-            name: 'Settings',
-            href: `/dashboard/${role}/settings`,
-            icon: Settings
-        },
-    ]
+    const getLinks = () => {
+        if (role === 'admin') {
+            return [
+                {
+                    name: 'Admin Overview',
+                    href: '/dashboard/admin',
+                    icon: LayoutDashboard
+                },
+                {
+                    name: 'New Registrations',
+                    href: '/dashboard/admin/registrations',
+                    icon: Calendar
+                },
+                {
+                    name: 'Manage Users',
+                    href: '/dashboard/admin/users',
+                    icon: Users
+                },
+                {
+                    name: 'Manage Courses',
+                    href: '/dashboard/admin/courses',
+                    icon: BookOpen
+                },
+                {
+                    name: 'Settings',
+                    href: '/dashboard/admin/settings',
+                    icon: Settings
+                },
+            ]
+        }
+
+        return [
+            {
+                name: 'Overview',
+                href: `/dashboard/${role}`,
+                icon: LayoutDashboard
+            },
+            {
+                name: role === 'student' ? 'My Courses' : 'Manage Courses',
+                href: `/dashboard/${role}/courses`,
+                icon: BookOpen
+            },
+            {
+                name: 'Schedule',
+                href: `/dashboard/${role}/schedule`,
+                icon: Calendar
+            },
+            {
+                name: role === 'student' ? 'My Instructors' : 'My Students',
+                href: `/dashboard/${role}/people`,
+                icon: Users
+            },
+            {
+                name: 'Settings',
+                href: `/dashboard/${role}/settings`,
+                icon: Settings
+            },
+        ]
+    }
+
+    const links = getLinks()
 
     const handleLogout = async () => {
         await supabase.auth.signOut()

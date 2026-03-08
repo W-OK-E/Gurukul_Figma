@@ -13,7 +13,7 @@ export default function DashboardLayout({
 }) {
     const router = useRouter()
     const [loading, setLoading] = useState(true)
-    const [role, setRole] = useState<'student' | 'instructor' | null>(null)
+    const [role, setRole] = useState<'student' | 'instructor' | 'admin' | null>(null)
 
     useEffect(() => {
         async function checkUser() {
@@ -24,7 +24,8 @@ export default function DashboardLayout({
                 return
             }
 
-            setRole(user.user_metadata?.role || 'student')
+            const userRole = user.user_metadata?.role || 'student'
+            setRole(userRole as any)
             setLoading(false)
         }
 
